@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">FacebookSignInSample</string>
+
+    <string name="facebook_app_id">{FB-APP-ID}</string>
+    <string name="fb_login_protocol_scheme">{FB-SCHEME}</string>
+
+    <string name="com_auth0_domain">{DOMAIN}</string>
+    <string name="com_auth0_client_id">{CLIENT_ID}</string>
+</resources>
