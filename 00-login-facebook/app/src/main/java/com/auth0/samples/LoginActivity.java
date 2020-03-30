@@ -58,23 +58,7 @@ public class LoginActivity extends AppCompatActivity {
             public void onSuccess(LoginResult result) {
                 //1. Logged in to Facebook
                 AccessToken accessToken = result.getAccessToken();
-                performLogin(accessToken, new SimpleCallback<Credentials>() {
-                    @Override
-                    public void onResult(@NonNull Credentials credentials) {
-                        Log.i(TAG, "Logged in");
-                        /*
-                         * Logged in!
-                         *  Use access token to call API
-                         *  or consume ID token locally
-                         */
-                    }
-
-                    @Override
-                    public void onError(@NonNull Throwable cause) {
-                        Log.e(TAG, "Login failed", cause);
-                        //Handle error
-                    }
-                });
+                performLogin(accessToken);
             }
 
             @Override
@@ -85,7 +69,7 @@ public class LoginActivity extends AppCompatActivity {
             @Override
             public void onError(FacebookException error) {
                 Log.e(TAG, "Error " + error.getMessage());
-                //Handle error
+                //Handle Facebook authentication error
             }
         });
     }
@@ -96,7 +80,7 @@ public class LoginActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
     }
 
-    private void performLogin(@NonNull final AccessToken accessToken, final SimpleCallback<Credentials> loginCallback) {
+    private void performLogin(@NonNull final AccessToken accessToken) {
         final String token = accessToken.getToken();
         fetchSessionToken(token, new SimpleCallback<String>() {
             @Override
@@ -107,20 +91,38 @@ public class LoginActivity extends AppCompatActivity {
                     @Override
                     public void onResult(@NonNull String jsonProfile) {
                         //3. Obtained the Facebook user profile
-                        exchangeTokens(sessionToken, jsonProfile, loginCallback);
+                        exchangeTokens(sessionToken, jsonProfile, new SimpleCallback<Credentials>() {
+
+                            @Override
+                            public void onResult(@NonNull Credentials credentials) {
+                                Log.i(TAG, "Logged in to Auth0");
+                                /*
+                                 * 4. Logged in!
+                                 *  Use access token to call API
+                                 *  or consume ID token locally
+                                 */
+                            }
+
+                            @Override
+                            public void onError(@NonNull Throwable cause) {
+                                Log.e(TAG, "Error exchanging tokens", cause);
+                                //Handle token exchange error
+                            }
+                        });
                     }
 
                     @Override
                     public void onError(@NonNull Throwable cause) {
-                        loginCallback.onError(cause);
+                        Log.e(TAG, "Error fetching the profile", cause);
+                        //Handle profile request error
                     }
-
                 });
             }
 
             @Override
             public void onError(@NonNull Throwable cause) {
-                loginCallback.onError(cause);
+                Log.e(TAG, "Error fetching the session token", cause);
+                //Handle session token request error
             }
         });
     }
@@ -188,7 +190,6 @@ public class LoginActivity extends AppCompatActivity {
                 .start(new BaseCallback<Credentials, AuthenticationException>() {
                     @Override
                     public void onSuccess(Credentials credentials) {
-                        //4. Logged in to Auth0 with the Facebook artifacts
                         callback.onResult(credentials);
                     }
 
@@ -196,7 +197,6 @@ public class LoginActivity extends AppCompatActivity {
                     public void onFailure(AuthenticationException error) {
                         callback.onError(error);
                     }
-
                 });
     }
 
@@ -204,7 +204,6 @@ public class LoginActivity extends AppCompatActivity {
         void onResult(@NonNull T result);
 
         void onError(@NonNull Throwable cause);
-
     }
 
 }
