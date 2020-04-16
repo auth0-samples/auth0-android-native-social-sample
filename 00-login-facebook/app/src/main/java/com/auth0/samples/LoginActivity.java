@@ -178,6 +178,7 @@ public class LoginActivity extends AppCompatActivity {
                 callback.onResult(response.getRawResponse());
             }
         });
+        request.executeAsync();
     }
 
     private void exchangeTokens(@NonNull String sessionToken, @NonNull String userProfile, @NonNull final SimpleCallback<Credentials> callback) {
